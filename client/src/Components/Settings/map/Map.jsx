@@ -3,6 +3,8 @@ import './Map.scss'
 import Footer from '../Footer/Footer';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import { IconButton } from '@mui/material';
+import GoogleMapsLoader from '../mapApi/GoogleMapsLoader';
+
 
 function Map() {
     const [isFooterVisible, setIsFooterVisible] = useState(false);
@@ -12,12 +14,16 @@ function Map() {
     };
     return (
         <>
-            <div className='map-space' >{isFooterVisible && <Footer />} </div>
-            <IconButton sx={{backdropFilter:'brightness(90%);',
+            {/* <div className='map-space' >{isFooterVisible && <Footer />} </div> */}
+            <div className='map-space' >
+            <GoogleMapsLoader />
+                               {isFooterVisible && <Footer />} </div>
+            <IconButton sx={{
+                backdropFilter: 'brightness(90%);',
 
                 borderRadius: '4px',
             }} onClick={toggleFooterVisibility}>
-                <ArrowDropUpIcon sx={{ width: '83vw', marginTop: -1, display:'flex'}} />
+                <ArrowDropUpIcon sx={{ width: '83vw', marginTop: -1, display: 'flex' }} />
             </IconButton>
         </>
 
