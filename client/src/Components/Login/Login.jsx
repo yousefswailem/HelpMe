@@ -18,6 +18,7 @@ function Login() {
         navigate('/settings');
     }
 
+
     return (
         <>
             <Card sx={{ borderRadius: '35px', backdropFilter: "blur", backgroundColor: 'rgba(0,0,30,0.4)' }} className='card'>

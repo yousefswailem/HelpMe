@@ -5,6 +5,8 @@ import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import { IconButton } from '@mui/material';
 import GoogleMapsLoader from '../mapApi/GoogleMapsLoader';
 
+const deviceId = '1'; 
+
 
 function Map() {
     const [isFooterVisible, setIsFooterVisible] = useState(false);
@@ -16,8 +18,8 @@ function Map() {
         <>
             {/* <div className='map-space' >{isFooterVisible && <Footer />} </div> */}
             <div className='map-space' >
-            <GoogleMapsLoader />
-                               {isFooterVisible && <Footer />} </div>
+                <GoogleMapsLoader deviceId={deviceId} />
+                {isFooterVisible && <Footer />} </div>
             <IconButton sx={{
                 backdropFilter: 'brightness(90%);',
 

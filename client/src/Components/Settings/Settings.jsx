@@ -36,12 +36,12 @@ function Settings() {
                         </div>
                     )}
                     <div className='icon-button-container'>
-                        <IconButton 
+                        <IconButton
                             sx={{
                                 backdropFilter: 'brightness(90%)',
                                 borderRadius: '4px',
                                 height: '100%',
-                            }} 
+                            }}
                             onClick={toggleCarsComponent}
                         >
                             <PlayArrowIcon />

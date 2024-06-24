@@ -10,7 +10,7 @@ const LeftPanel = () => {
     const [checkboxData, setCheckboxData] = useState([
         { label: 'Label', defaultChecked: true, disabled: false },
         { label: 'Required', defaultChecked: false, disabled: false },
-        { label: 'Required', defaultChecked: false, disabled: false },
+        { label: 'asd', defaultChecked: false, disabled: false },
         { label: 'Required', defaultChecked: false, disabled: false },
         { label: 'Required', defaultChecked: false, disabled: false },
         { label: 'Required', defaultChecked: false, disabled: false },
