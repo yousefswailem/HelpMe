@@ -29,6 +29,9 @@ async function fetchDriverLocations() {
     );
     
     const devices = response.data.reduce((acc, group) => {
+      console.log('====================================');
+      console.log(data);
+      console.log('====================================');
       return acc.concat(group.items.map(item => ({
         id: item.id,
         name: item.name,
