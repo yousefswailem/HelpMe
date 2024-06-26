@@ -20,7 +20,7 @@ const io = socketIo(server, {
 
 const port = 8000;
 const client = new Client({});
-const API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+const API_KEY = 'AIzaSyBBpLfENt9ayKz1lZxN2GGimK2nL05HNSc';
 
 async function fetchDriverLocations() {
   try {
@@ -86,6 +86,32 @@ async function fetchClosestDrivers(driverLocations, shopLocations) {
     return [];
   }
 }
+
+app.get("/closest-driver", async (req, res) => {
+  const { lat, lng } = req.query;
+
+  if (!lat || !lng) {
+    return res.status(400).json({ error: "Invalid shop address coordinates" });
+  }
+
+  try {
+    const driverLocations = await fetchDriverLocations();
+    const shopLocations = [{ lat: parseFloat(lat), lng: parseFloat(lng) }];
+    const closestDrivers = await fetchClosestDrivers(driverLocations, shopLocations);
+
+    if (closestDrivers.length > 0) {
+      const closestDriver = closestDrivers.reduce((prev, curr) => {
+        return prev.distanceValue < curr.distanceValue ? prev : curr;
+      });
+      res.json(closestDriver);
+    } else {
+      res.status(404).json({ error: "No drivers found" });
+    }
+  } catch (error) {
+    console.error("Error fetching closest driver:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 io.on('connection', (socket) => {
   console.log('New client connected');

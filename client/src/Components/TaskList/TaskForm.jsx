@@ -1,10 +1,9 @@
 // src/components/TaskForm.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Typography, TextField, Button, MenuItem, Grid } from '@mui/material';
-import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
-
+import axios from 'axios'; // Import axios for making HTTP requests
+import { v4 as uuidv4 } from 'uuid'; // Import the uuid library
 
 
 
@@ -99,15 +98,23 @@ const addressOptions = [
 ]
 
 
+const shopAddress = { id: 8, name: "Shop A", lat: 31.9197688227728, lng: 35.21693786802346 }; // Single shop address
+
+const generateUniqueId = () => {
+    return `INV-${uuidv4()}`;
+};
+
 const TaskForm = () => {
+    const [devices, setDevices] = useState([]);
     const [device, setDevice] = useState('');
-    const [priority, setPriority] = useState('');
+    const [priority, setPriority] = useState('High'); // Default value set to "High"
     const [startDateTime, setStartDateTime] = useState(dayjs());
     const [endDateTime, setEndDateTime] = useState(dayjs());
     const [deliveryStartDateTime, setDeliveryStartDateTime] = useState(dayjs());
     const [deliveryEndDateTime, setDeliveryEndDateTime] = useState(dayjs());
     const [homeAddress, setHomeAddress] = useState('');
-    const [shopAddress, setShopAddress] = useState('BBQ Pizza - Al-Bireh');
+    const [invoiceNumber, setInvoiceNumber] = useState(generateUniqueId());
+    const [formSubmitted, setFormSubmitted] = useState(false); // State to track form submission
 
     const handleDeviceChange = (event) => {
         setDevice(event.target.value);
@@ -117,17 +124,96 @@ const TaskForm = () => {
         setPriority(event.target.value);
     };
 
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        console.log('Form submitted');
-    };
-
     const handleHomeAddressChange = (event) => {
         setHomeAddress(event.target.value);
     };
 
-    const handleShopAddressChange = (event) => {
-        setShopAddress(event.target.value);
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        setFormSubmitted(true);
+        alert('Form Has Been Submitted');
+    };
+
+    useEffect(() => {
+        // Replace the URL with your actual API endpoint
+        axios.get(
+            "http://185.203.217.168/api/get_devices?lang=en&user_api_hash=$2y$10$F4RpJGDpBDWO2ie448fQAu2Zo0twdwyBdMmnbeSqFbEkjGYocP.Y6"
+        )
+            .then(response => {
+                const items = response.data[1].items;
+                setDevices(items.map(item => item.name));
+            })
+            .catch(error => {
+                console.error('There was an error fetching the devices!', error);
+            });
+    }, []);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const closestDriver = await fetchClosestDriver(shopAddress);
+            if (closestDriver) {
+                // Add the closest driver to the devices array if not already present
+                if (!devices.includes(closestDriver.driverName)) {
+                    setDevices(prevDevices => [...prevDevices, closestDriver.driverName]);
+                }
+                setDevice(closestDriver.driverName);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    useEffect(() => {
+        if (formSubmitted) {
+            const postData = async () => {
+                try {
+                    const response = await axios.post('/taskForm', {
+                        device,
+                        priority,
+                        startDateTime,
+                        endDateTime,
+                        deliveryStartDateTime,
+                        deliveryEndDateTime,
+                        homeAddress,
+                        shopAddress,
+                        invoiceNumber
+                    }, {
+                        headers: {
+                            'Authorization': 'Bearer $2y$10$F4RpJGDpBDWO2ie448fQAu2Zo0twdwyBdMmnbeSqFbEkjGYocP.Y6',
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    console.log('Response:', response.data);
+                    setInvoiceNumber(generateUniqueId()); // Generate a new unique ID for the next form submission
+                } catch (error) {
+                    console.error('Error posting data:', error);
+                }
+            };
+
+            postData();
+            setFormSubmitted(false); // Reset form submission state
+        }
+    }, [formSubmitted, device, priority, startDateTime, endDateTime, deliveryStartDateTime, deliveryEndDateTime, homeAddress, shopAddress, invoiceNumber]);
+
+    const fetchClosestDriver = async (shopAddress) => {
+        if (!shopAddress || !shopAddress.lat || !shopAddress.lng) {
+            console.error("Invalid shop address");
+            return null;
+        }
+
+        try {
+            const response = await axios.get("http://localhost:8000/closest-driver", {
+                params: {
+                    lat: shopAddress.lat,
+                    lng: shopAddress.lng
+                }
+            });
+
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching closest driver:", error);
+            return null;
+        }
     };
 
     return (
@@ -147,21 +233,25 @@ const TaskForm = () => {
                             variant="outlined"
                             margin="normal"
                             sx={{ bgcolor: 'white' }}
+                            disabled
                         >
                             <MenuItem value="">
                                 <em>-- حدد --</em>
                             </MenuItem>
-                            <MenuItem value="Device1">جهاز 1</MenuItem>
-                            <MenuItem value="Device2">جهاز 2</MenuItem>
+                            {devices.map((name, index) => (
+                                <MenuItem key={index} value={name}>{name}</MenuItem>
+                            ))}
                         </TextField>
                     </Grid>
                     <Grid item xs={12} sm={3}>
                         <TextField
                             label="رقم الفاتورة"
+                            value={invoiceNumber}
                             fullWidth
                             variant="outlined"
                             margin="normal"
                             sx={{ bgcolor: 'white' }}
+                            disabled
                         />
                     </Grid>
                     <Grid item xs={12} sm={9}>
@@ -193,31 +283,13 @@ const TaskForm = () => {
                         <Typography>عنوان الاستلام:</Typography>
                         <TextField
                             label="عنوان المحل"
-                            value={shopAddress}
-                            onChange={handleShopAddressChange}
+                            value={shopAddress.name}
                             fullWidth
                             variant="outlined"
                             margin="normal"
                             sx={{ bgcolor: 'white' }}
                             disabled
-                        >
-                            <p> {shopAddress}</p>
-
-                        </TextField>
-                        {/* <LocalizationProvider dateAdapter={AdapterDayjs}>
-                            <DateTimePicker
-                                label="من"
-                                value={startDateTime}
-                                onChange={setStartDateTime}
-                                renderInput={(params) => <TextField {...params} fullWidth variant="outlined" margin="normal" sx={{ bgcolor: 'white' }} />}
-                            />
-                            <DateTimePicker
-                                label="الى"
-                                value={endDateTime}
-                                onChange={setEndDateTime}
-                                renderInput={(params) => <TextField {...params} fullWidth variant="outlined" margin="normal" sx={{ bgcolor: 'white' }} />}
-                            />
-                        </LocalizationProvider> */}
+                        />
                     </Grid>
                     <Grid item xs={12} sm={6}>
                         <Typography>عنوان التسليم:</Typography>
@@ -237,20 +309,6 @@ const TaskForm = () => {
                                 </MenuItem>
                             ))}
                         </TextField>
-                        {/* <LocalizationProvider dateAdapter={AdapterDayjs}>
-                            <DateTimePicker
-                                label="من"
-                                value={deliveryStartDateTime}
-                                onChange={setDeliveryStartDateTime}
-                                renderInput={(params) => <TextField {...params} fullWidth variant="outlined" margin="normal" sx={{ bgcolor: 'white' }} />}
-                            />
-                            <DateTimePicker
-                                label="الى"
-                                value={deliveryEndDateTime}
-                                onChange={setDeliveryEndDateTime}
-                                renderInput={(params) => <TextField {...params} fullWidth variant="outlined" margin="normal" sx={{ bgcolor: 'white' }} />}
-                            />
-                        </LocalizationProvider> */}
                     </Grid>
                     <Grid item xs={12}>
                         <TextField
@@ -270,7 +328,7 @@ const TaskForm = () => {
                     </Grid>
                 </Grid>
             </form>
-        </Container >
+        </Container>
     );
 };
 
