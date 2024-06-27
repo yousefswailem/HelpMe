@@ -63,9 +63,6 @@ const GoogleMapsLoader = () => {
   useEffect(() => {
     socket.on('driverLocations', (data) => {
       setDriverLocations(data);
-      console.log('====================================');
-      console.log(driverLocations);
-      console.log('====================================');
     });
 
     return () => {

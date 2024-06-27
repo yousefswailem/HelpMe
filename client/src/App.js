@@ -6,6 +6,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import Login from "./Components/Login/Login";
+import Register from "./Components/Registeration/Register";
 import Settings from "./Components/Settings/Settings";
 import "./App.css";
 import OrderCaptain from "./Components/Orders/OrderCaptain";
@@ -38,6 +39,7 @@ const Main = () => {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/ordercaptain" element={<OrderCaptain />} />
         <Route path="/taskform" element={<TaskForm />} />

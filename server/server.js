@@ -29,9 +29,6 @@ async function fetchDriverLocations() {
     );
     
     const devices = response.data.reduce((acc, group) => {
-      console.log('====================================');
-      console.log(data);
-      console.log('====================================');
       return acc.concat(group.items.map(item => ({
         id: item.id,
         name: item.name,
@@ -56,7 +53,7 @@ io.on('connection', (socket) => {
   };
 
   sendDriverLocations();
-  const interval = setInterval(sendDriverLocations, 5000);
+  const interval = setInterval(sendDriverLocations, 1000);
 
   socket.on('disconnect', () => {
     clearInterval(interval);
