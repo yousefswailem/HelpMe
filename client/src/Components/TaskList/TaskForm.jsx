@@ -1,9 +1,9 @@
-// src/components/TaskForm.js
 import React, { useState, useEffect } from 'react';
 import { Container, Typography, TextField, Button, MenuItem, Grid } from '@mui/material';
 import dayjs from 'dayjs';
-import axios from 'axios'; // Import axios for making HTTP requests
-import { v4 as uuidv4 } from 'uuid'; // Import the uuid library
+import axios from 'axios';
+import { v4 as uuidv4 } from 'uuid';
+import AddressNav from './AddressNav';
 
 
 
@@ -96,25 +96,23 @@ const addressOptions = [
     { key: 'تل النصبة', value: 'تل النصبة' },
     { key: 'الارسال بعد البيست ايسترن', value: 'الارسال بعد البيست ايسترن' }
 ]
-
-
-const shopAddress = { id: 8, name: "Shop A", lat: 31.9197688227728, lng: 35.21693786802346 }; // Single shop address
+const shopAddress = { id: 8, name: "Shop A", lat: 31.9197688227728, lng: 35.21693786802346 };
 
 const generateUniqueId = () => {
     return `INV-${uuidv4()}`;
 };
-
 const TaskForm = () => {
     const [devices, setDevices] = useState([]);
     const [device, setDevice] = useState('');
-    const [priority, setPriority] = useState('High'); // Default value set to "High"
+    const [title, setTitle] = useState('');
+    const [priority, setPriority] = useState('3');
     const [startDateTime, setStartDateTime] = useState(dayjs());
     const [endDateTime, setEndDateTime] = useState(dayjs());
     const [deliveryStartDateTime, setDeliveryStartDateTime] = useState(dayjs());
     const [deliveryEndDateTime, setDeliveryEndDateTime] = useState(dayjs());
     const [homeAddress, setHomeAddress] = useState('');
     const [invoiceNumber, setInvoiceNumber] = useState(generateUniqueId());
-    const [formSubmitted, setFormSubmitted] = useState(false); // State to track form submission
+    const [formSubmitted, setFormSubmitted] = useState(false);
 
     const handleDeviceChange = (event) => {
         setDevice(event.target.value);
@@ -122,6 +120,9 @@ const TaskForm = () => {
 
     const handlePriorityChange = (event) => {
         setPriority(event.target.value);
+    };
+    const handleTitleChange = (event) => {
+        setTitle(event.target.value);
     };
 
     const handleHomeAddressChange = (event) => {
@@ -131,11 +132,9 @@ const TaskForm = () => {
     const handleSubmit = (event) => {
         event.preventDefault();
         setFormSubmitted(true);
-        alert('Form Has Been Submitted');
     };
 
     useEffect(() => {
-        // Replace the URL with your actual API endpoint
         axios.get(
             "http://185.203.217.168/api/get_devices?lang=en&user_api_hash=$2y$10$F4RpJGDpBDWO2ie448fQAu2Zo0twdwyBdMmnbeSqFbEkjGYocP.Y6"
         )
@@ -152,7 +151,6 @@ const TaskForm = () => {
         const fetchData = async () => {
             const closestDriver = await fetchClosestDriver(shopAddress);
             if (closestDriver) {
-                // Add the closest driver to the devices array if not already present
                 if (!devices.includes(closestDriver.driverName)) {
                     setDevices(prevDevices => [...prevDevices, closestDriver.driverName]);
                 }
@@ -166,32 +164,65 @@ const TaskForm = () => {
     useEffect(() => {
         if (formSubmitted) {
             const postData = async () => {
+                const task = {
+                    id: generateUniqueId(),
+                    device_id: device,
+                    user_id: 'user123', // Example user ID, replace with actual user ID
+                    title: title,
+                    comment: 'This is a comment',
+                    priority,
+                    status: 1, // Update to the desired status
+                    invoice_number: invoiceNumber,
+                    pickup_address: shopAddress.name,
+                    pickup_address_lat: shopAddress.lat,
+                    pickup_address_lng: shopAddress.lng,
+                    pickup_time_from: startDateTime.toISOString(),
+                    pickup_time_to: endDateTime.toISOString(),
+                    delivery_address: homeAddress,
+                    delivery_address_lat: '31.95', // Example latitude, replace with actual
+                    delivery_address_lng: '35.21167', // Example longitude, replace with actual
+                    delivery_time_from: deliveryStartDateTime.toISOString(),
+                    delivery_time_to: deliveryEndDateTime.toISOString(),
+                    created_at: dayjs().toISOString(),
+                    updated_at: dayjs().toISOString(),
+                };
+
                 try {
-                    const response = await axios.post('/taskForm', {
-                        device,
-                        priority,
-                        startDateTime,
-                        endDateTime,
-                        deliveryStartDateTime,
-                        deliveryEndDateTime,
-                        homeAddress,
-                        shopAddress,
-                        invoiceNumber
-                    }, {
-                        headers: {
-                            'Authorization': 'Bearer $2y$10$F4RpJGDpBDWO2ie448fQAu2Zo0twdwyBdMmnbeSqFbEkjGYocP.Y6',
-                            'Content-Type': 'application/json'
+                    const response = await axios.post('http://185.203.217.168/api/add_task?user_api_hash=$2y$10$F4RpJGDpBDWO2ie448fQAu2Zo0twdwyBdMmnbeSqFbEkjGYocP.Y6&device_id=7',
+                        {
+                            id: task.id,
+                            device_id: task.device_id,
+                            user_id: task.user_id, // Example user ID, replace with actual user ID
+                            title: task.title,
+                            comment: task.comment,
+                            priority: task.priority,
+                            status: 1, // Update to the desired status
+                            invoice_number: task.invoice_number,
+                            pickup_address: task.pickup_address,
+                            pickup_address_lat: task.pickup_address_lat,
+                            pickup_address_lng: task.pickup_address_lng,
+                            pickup_time_from: task.pickup_time_from,
+                            pickup_time_to: task.pickup_time_to,
+                            delivery_address: task.delivery_address,
+                            delivery_address_lat: task.delivery_address_lat, // Example latitude, replace with actual
+                            delivery_address_lng: task.delivery_address_lng, // Example longitude, replace with actual
+                            delivery_time_from: task.delivery_time_from,
+                            delivery_time_to: task.delivery_time_to,
+                            created_at: task.created_at,
+                            updated_at: task.updated_at,
+
                         }
-                    });
+                    );
+
                     console.log('Response:', response.data);
-                    setInvoiceNumber(generateUniqueId()); // Generate a new unique ID for the next form submission
+                    setInvoiceNumber(generateUniqueId());
                 } catch (error) {
                     console.error('Error posting data:', error);
                 }
             };
 
             postData();
-            setFormSubmitted(false); // Reset form submission state
+            setFormSubmitted(false);
         }
     }, [formSubmitted, device, priority, startDateTime, endDateTime, deliveryStartDateTime, deliveryEndDateTime, homeAddress, shopAddress, invoiceNumber]);
 
@@ -218,31 +249,13 @@ const TaskForm = () => {
 
     return (
         <Container maxWidth="md" sx={{ bgcolor: 'gray', color: 'white', padding: 3, borderRadius: 2 }}>
-            <Typography variant="h6" gutterBottom>
+            <Typography sx={{ direction: 'rtl' }} variant="h6" gutterBottom>
                 مهمة جديدة
             </Typography>
+            <Typography sx={{ color: 'white', display: 'flex', justifyContent: 'center', mb: '20px' }}>اختار عنوان التسليم</Typography>
+            <AddressNav options={addressOptions} />
             <form onSubmit={handleSubmit}>
                 <Grid container spacing={2}>
-                    <Grid item xs={12} sm={9}>
-                        <TextField
-                            select
-                            label="جهاز"
-                            value={device}
-                            onChange={handleDeviceChange}
-                            fullWidth
-                            variant="outlined"
-                            margin="normal"
-                            sx={{ bgcolor: 'white' }}
-                            disabled
-                        >
-                            <MenuItem value="">
-                                <em>-- حدد --</em>
-                            </MenuItem>
-                            {devices.map((name, index) => (
-                                <MenuItem key={index} value={name}>{name}</MenuItem>
-                            ))}
-                        </TextField>
-                    </Grid>
                     <Grid item xs={12} sm={3}>
                         <TextField
                             label="رقم الفاتورة"
@@ -256,73 +269,17 @@ const TaskForm = () => {
                     </Grid>
                     <Grid item xs={12} sm={9}>
                         <TextField
-                            label="العنوان"
+                            label="تفاصيل العنوان (اختياري)"
+                            onChange={handleTitleChange}
+                            value={title}
                             fullWidth
                             variant="outlined"
                             margin="normal"
-                            sx={{ bgcolor: 'white' }}
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={3}>
-                        <TextField
-                            select
-                            label="أفضلية"
-                            value={priority}
-                            onChange={handlePriorityChange}
-                            fullWidth
-                            variant="outlined"
-                            margin="normal"
-                            sx={{ bgcolor: 'white' }}
-                        >
-                            <MenuItem value="High">أولوية عالية</MenuItem>
-                            <MenuItem value="Medium">أولوية متوسطة</MenuItem>
-                            <MenuItem value="Low">أولوية منخفضة</MenuItem>
-                        </TextField>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                        <Typography>عنوان الاستلام:</Typography>
-                        <TextField
-                            label="عنوان المحل"
-                            value={shopAddress.name}
-                            fullWidth
-                            variant="outlined"
-                            margin="normal"
-                            sx={{ bgcolor: 'white' }}
-                            disabled
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                        <Typography>عنوان التسليم:</Typography>
-                        <TextField
-                            select
-                            label="عنوان المنزل"
-                            value={homeAddress}
-                            onChange={handleHomeAddressChange}
-                            fullWidth
-                            variant="outlined"
-                            margin="normal"
-                            sx={{ bgcolor: 'white' }}
-                        >
-                            {addressOptions.map(option => (
-                                <MenuItem key={option.key} value={option.value}>
-                                    {option.value}
-                                </MenuItem>
-                            ))}
-                        </TextField>
-                    </Grid>
-                    <Grid item xs={12}>
-                        <TextField
-                            label="تعليق"
-                            fullWidth
-                            variant="outlined"
-                            margin="normal"
-                            multiline
-                            rows={4}
                             sx={{ bgcolor: 'white' }}
                         />
                     </Grid>
                     <Grid item xs={12} sx={{ textAlign: 'center' }}>
-                        <Button variant="contained" color="primary" type="submit">
+                        <Button sx={{ height: '10vh', width: '100%' }} variant="contained" color="success" type="submit">
                             إرسال
                         </Button>
                     </Grid>

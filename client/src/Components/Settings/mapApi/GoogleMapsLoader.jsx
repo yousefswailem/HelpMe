@@ -7,10 +7,9 @@ const socket = io('http://localhost:8000');
 const GoogleMapsLoader = () => {
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
   const [driverLocations, setDriverLocations] = useState([]);
+  const [firstDriver, setFirstDriver] = useState(null);
   const [shopLocations, setShopLocations] = useState([
     { id: 8, name: "Shop A", lat: 31.9197688227728, lng: 35.21693786802346 },
-    { id: 1, name: "Shop X", lat: 31.940026621132002, lng: 35.16957950739496 },
-    { id: 2, name: "Shop Y", lat: 31.973111981350307, lng: 35.19838318838608 },
   ]);
   const mapRef = useRef(null);
   const markersRef = useRef({});
@@ -88,7 +87,6 @@ const GoogleMapsLoader = () => {
           anchor: new window.google.maps.Point(15, 15),
         };
 
-
         if (!markersRef.current[driver.id]) {
           markersRef.current[driver.id] = new window.google.maps.Marker({
             position: { lat: driver.lat, lng: driver.lng },
@@ -109,7 +107,6 @@ const GoogleMapsLoader = () => {
         anchor: new window.google.maps.Point(15, 15),
       };
 
-
       shopLocations.forEach((shop) => {
         if (!markersRef.current[shop.id]) {
           markersRef.current[shop.id] = new window.google.maps.Marker({
@@ -123,7 +120,32 @@ const GoogleMapsLoader = () => {
     }
   }, [isScriptLoaded, driverLocations, shopLocations]);
 
-  return <div id="map" style={{ height: '77vh', width: '100%' }}></div>;
+  const getFirstDriver = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/first_driver');
+      const driver = await response.json();
+      setFirstDriver(driver);
+    } catch (error) {
+      console.error('Error fetching first driver:', error);
+    }
+  };
+
+  useEffect(() => {
+    getFirstDriver();
+  }, []);
+
+  return (
+    <div>
+      <div id="map" style={{ height: '77vh', width: '100%' }}></div>
+      {firstDriver && (
+        <div>
+          <h3>First Driver</h3>
+          <p>Name: {firstDriver.name}</p>
+          <p>Location: {firstDriver.lat}, {firstDriver.lng}</p>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default GoogleMapsLoader;
