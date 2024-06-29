@@ -5,9 +5,10 @@ import TopNavBar from './TopNavBar/TopNavBar';
 import Cars from './cars/Cars';
 import UserFlagIcons from './TopNavBar/UserFlagIcons';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import { IconButton } from '@mui/material';
+import { Button, IconButton } from '@mui/material';
 import Map from './map/Map';
 import SidebarRight from './Sidebar-right/SidebarRight';
+import { useNavigate } from 'react-router-dom';
 
 function Settings() {
     const [selectedComponent, setSelectedComponent] = useState(null);
@@ -19,7 +20,12 @@ function Settings() {
     const toggleCarsComponent = () => {
         setSelectedComponent((prevComponent) => (prevComponent === 'cars' ? null : 'cars'));
     };
-
+    const navigate = useNavigate();
+    
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        navigate('/taskform');
+    }
     return (
         <div className='container'>
             <Sidebar onIconClick={handleSidebarClick} />
@@ -27,6 +33,19 @@ function Settings() {
                 <div className='nav'>
                     <TopNavBar />
                     <div className='spacer'></div>
+                    <Button
+                sx={{
+                    width: '15vw',
+                    height: '9vh',
+                    fontSize: '18px',
+                    mr:'5px'
+                }}
+                variant="contained"
+                color="success"
+                onClick={handleSubmit}
+            >
+                طلب كابتن
+            </Button>
                     <UserFlagIcons />
                 </div>
                 <div className='main-content'>

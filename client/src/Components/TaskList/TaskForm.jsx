@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, TextField, Button, MenuItem, Grid } from '@mui/material';
+import { Container, Typography, TextField, Button, Grid } from '@mui/material';
 import dayjs from 'dayjs';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import AddressNav from './AddressNav';
-
-
+import { useNavigate } from 'react-router-dom';
 
 const addressOptions = [
     { key: 'بلدية البيرة', value: 'بلدية البيرة', lon: '31.95', lat: '35.21167' },
@@ -95,7 +94,7 @@ const addressOptions = [
     { key: 'رمون', value: 'رمون' },
     { key: 'تل النصبة', value: 'تل النصبة' },
     { key: 'الارسال بعد البيست ايسترن', value: 'الارسال بعد البيست ايسترن' }
-]
+];
 const shopAddress = { id: 8, name: "Shop A", lat: 31.9197688227728, lng: 35.21693786802346 };
 
 const generateUniqueId = () => {
@@ -110,24 +109,15 @@ const TaskForm = () => {
     const [endDateTime, setEndDateTime] = useState(dayjs());
     const [deliveryStartDateTime, setDeliveryStartDateTime] = useState(dayjs());
     const [deliveryEndDateTime, setDeliveryEndDateTime] = useState(dayjs());
-    const [homeAddress, setHomeAddress] = useState('');
+    const [homeAddress, setHomeAddress] = useState({});
     const [invoiceNumber, setInvoiceNumber] = useState(generateUniqueId());
     const [formSubmitted, setFormSubmitted] = useState(false);
 
-    const handleDeviceChange = (event) => {
-        setDevice(event.target.value);
-    };
-
-    const handlePriorityChange = (event) => {
-        setPriority(event.target.value);
-    };
     const handleTitleChange = (event) => {
         setTitle(event.target.value);
     };
 
-    const handleHomeAddressChange = (event) => {
-        setHomeAddress(event.target.value);
-    };
+    const navigate = useNavigate();
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -178,41 +168,20 @@ const TaskForm = () => {
                     pickup_address_lng: shopAddress.lng,
                     pickup_time_from: startDateTime.toISOString(),
                     pickup_time_to: endDateTime.toISOString(),
-                    delivery_address: homeAddress,
-                    delivery_address_lat: '31.95', // Example latitude, replace with actual
-                    delivery_address_lng: '35.21167', // Example longitude, replace with actual
+                    delivery_address: homeAddress.value,
+                    delivery_address_lat: homeAddress.lat,
+                    delivery_address_lng: homeAddress.lon,
                     delivery_time_from: deliveryStartDateTime.toISOString(),
                     delivery_time_to: deliveryEndDateTime.toISOString(),
                     created_at: dayjs().toISOString(),
                     updated_at: dayjs().toISOString(),
                 };
-
                 try {
-                    const response = await axios.post('http://185.203.217.168/api/add_task?user_api_hash=$2y$10$F4RpJGDpBDWO2ie448fQAu2Zo0twdwyBdMmnbeSqFbEkjGYocP.Y6&device_id=7',
-                        {
-                            id: task.id,
-                            device_id: task.device_id,
-                            user_id: task.user_id, // Example user ID, replace with actual user ID
-                            title: task.title,
-                            comment: task.comment,
-                            priority: task.priority,
-                            status: 1, // Update to the desired status
-                            invoice_number: task.invoice_number,
-                            pickup_address: task.pickup_address,
-                            pickup_address_lat: task.pickup_address_lat,
-                            pickup_address_lng: task.pickup_address_lng,
-                            pickup_time_from: task.pickup_time_from,
-                            pickup_time_to: task.pickup_time_to,
-                            delivery_address: task.delivery_address,
-                            delivery_address_lat: task.delivery_address_lat, // Example latitude, replace with actual
-                            delivery_address_lng: task.delivery_address_lng, // Example longitude, replace with actual
-                            delivery_time_from: task.delivery_time_from,
-                            delivery_time_to: task.delivery_time_to,
-                            created_at: task.created_at,
-                            updated_at: task.updated_at,
-
+                    const response = await axios.post('http://localhost:3000/form', task, {
+                        headers: {
+                            'Content-Type': 'application/json'
                         }
-                    );
+                    });
 
                     console.log('Response:', response.data);
                     setInvoiceNumber(generateUniqueId());
@@ -247,13 +216,17 @@ const TaskForm = () => {
         }
     };
 
+    const handleAddressSelect = (selectedAddress) => {
+        setHomeAddress(selectedAddress);
+    };
+
     return (
         <Container maxWidth="md" sx={{ bgcolor: 'gray', color: 'white', padding: 3, borderRadius: 2 }}>
             <Typography sx={{ direction: 'rtl' }} variant="h6" gutterBottom>
                 مهمة جديدة
             </Typography>
             <Typography sx={{ color: 'white', display: 'flex', justifyContent: 'center', mb: '20px' }}>اختار عنوان التسليم</Typography>
-            <AddressNav options={addressOptions} />
+            <AddressNav options={addressOptions} onAddressSelect={handleAddressSelect} />
             <form onSubmit={handleSubmit}>
                 <Grid container spacing={2}>
                     <Grid item xs={12} sm={3}>
@@ -279,7 +252,7 @@ const TaskForm = () => {
                         />
                     </Grid>
                     <Grid item xs={12} sx={{ textAlign: 'center' }}>
-                        <Button sx={{ height: '10vh', width: '100%' }} variant="contained" color="success" type="submit">
+                        <Button sx={{ height: '10vh', width: '100%' }} variant="contained" color="success" onClick={() => ( navigate('/settings'))} type="submit">
                             إرسال
                         </Button>
                     </Grid>

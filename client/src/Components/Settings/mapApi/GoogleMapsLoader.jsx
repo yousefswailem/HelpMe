@@ -9,7 +9,7 @@ const GoogleMapsLoader = () => {
   const [driverLocations, setDriverLocations] = useState([]);
   const [firstDriver, setFirstDriver] = useState(null);
   const [shopLocations, setShopLocations] = useState([
-    { id: 8, name: "Shop A", lat: 31.9197688227728, lng: 35.21693786802346 },
+    { id: 8, name: "Shop A", lat: 31.8946422, lng: 35.2107863 },
   ]);
   const mapRef = useRef(null);
   const markersRef = useRef({});

@@ -1,7 +1,7 @@
 import React from 'react';
-import { List, ListItem, ListItemText, Grid, Button } from '@mui/material';
+import { Grid, Button, ListItemText } from '@mui/material';
 
-const AddressNav = ({ options }) => {
+const AddressNav = ({ options, onAddressSelect }) => {
     const chunkArray = (arr, chunkSize) => {
         const chunks = [];
         for (let i = 0; i < arr.length; i += chunkSize) {
@@ -19,7 +19,10 @@ const AddressNav = ({ options }) => {
                     <Grid container spacing={2}>
                         {chunk.map((option) => (
                             <Grid item xs={1.5} key={option.key}>
-                                <Button sx={{color:'black',padding:'2px',backgroundColor:'white',width:'5vw', height:'100%',mt:'1px', border:'solid 1px black'}}>
+                                <Button
+                                    sx={{ color: 'black', padding: '2px', backgroundColor: 'white', width: '5vw', height: '100%', mt: '1px', border: 'solid 1px black' }}
+                                    onClick={() => onAddressSelect(option)}
+                                >
                                     <ListItemText primary={option.value} />
                                 </Button>
                             </Grid>

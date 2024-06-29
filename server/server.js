@@ -74,12 +74,11 @@ app.get("/directions", async (req, res) => {
   }
 });
 
-// Endpoint to add a new task
-app.post("/api/add_task", (req, res) => {
+app.post('/form', (req, res) => {
   const { task } = req.body;
   tasks.push(task);
-  io.emit("newTask", task); // Emit new task to all clients
-  res.status(200).send("Task added successfully");
+  io.emit('newTask', task); // Emit new task to all clients
+  res.status(200).send('Task added successfully');
 });
 
 // Function to poll the API and check for task updates
